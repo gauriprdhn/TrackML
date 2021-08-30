@@ -24,10 +24,10 @@ def compute_oc_loss(out,
     cluster_properties = out[:,3:]
     LV, Lbeta = calc_LV_Lbeta(betas,
                               cluster_space_coords,
-                              data.y.type(torch.LongTensor).to(betas.device),
+                              data.y.long(),
                               data.batch)
     Lp = calc_Lp(betas,
-                 data.y.type(torch.LongTensor).to(betas.device),
+                 data.y.long(),
                  cluster_properties,
                  data.tracks)
     
