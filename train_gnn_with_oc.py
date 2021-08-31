@@ -12,26 +12,33 @@ import os.path as osp
 "custom imports"
 from dataloader import fetch_dataloader
 from gravnet_model import GravnetModel
-from optimized_oc import calc_LV_Lbeta, calc_Lp
+from optimized_oc import calc_LV_Lbeta
 import config 
 
-def compute_oc_loss(out, 
-                    data, 
-                    s_c: float =1.):
+loss_offset: float = 1.0
 
-    betas = torch.sigmoid(out[:,0])
-    cluster_space_coords = out[:,1:3]
-    cluster_properties = out[:,3:]
-    LV, Lbeta = calc_LV_Lbeta(betas,
-                              cluster_space_coords,
-                              data.y.long(),
-                              data.batch)
-    Lp = calc_Lp(betas,
-                 data.y.long(),
-                 cluster_properties,
-                 data.tracks)
-    
-    return Lp + s_c*(LV + Lbeta)
+def compute_oc_loss(out, data, s_c=1., return_components=False):
+    device = out.device
+    pred_betas = torch.sigmoid(out[:,0])
+    pred_cluster_space_coords = out[:,1:4]
+    # pred_cluster_properties = out[:,3:]
+    assert all(t.device == device for t in [
+        pred_betas, pred_cluster_space_coords, data.y,
+        data.batch,
+        # pred_cluster_properties, data.truth_cluster_props
+        ])
+    out_oc = calc_LV_Lbeta(
+        pred_betas,
+        pred_cluster_space_coords,
+        data.y.long(),
+        data.batch,
+        return_components=return_components
+        )
+    if return_components:
+        return out_oc
+    else:
+        LV, Lbeta = out_oc
+        return LV + Lbeta + loss_offset
 
 def train(data_loader, model, epoch, optimizer,device):
     print('Training epoch', epoch)
