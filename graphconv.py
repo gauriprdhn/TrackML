@@ -9,7 +9,7 @@ from torch.nn import Linear, ReLU
 from torch_scatter import scatter
 # from torch_geometric.nn import global_mean_pool
 from torch_geometric.data import (Data, Dataset, DataLoader)
-from torch_geometric.nn.conv.gravnet_conv import GravNetConv
+from torch_cmspepr.gravnet_conv import GravNetConv
 
 
 def setup_logger(name="hgcalmb", fmt=None):
